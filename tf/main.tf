@@ -146,7 +146,15 @@ resource "helm_release" "jupyterhub" {
   }
   set {
     name  = "singleuser.storage.type"
-    value = "none"
+    value = "dynamic"
+  }
+  set {
+    name  = "singleuser.storage.capacity"
+    value = "20Gi"
+  }
+  set {
+    name  = "singleuser.storage.dynamic.storageClass"
+    value = "csi-cinder-high-speed"
   }
   set {
     name  = "singleuser.cpu.limit"
