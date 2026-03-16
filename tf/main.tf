@@ -177,7 +177,7 @@ resource "helm_release" "dask_gateway" {
   namespace  = local.namespace
   repository = "https://helm.dask.org"
   chart      = "dask-gateway"
-  version    = "2025.4.0"
+  version    = "2024.1.0"
   timeout    = 300
 
   values = [
@@ -185,4 +185,39 @@ resource "helm_release" "dask_gateway" {
   ]
 
   depends_on = [helm_release.jupyterhub]
+}
+
+resource "kubernetes_network_policy" "singleuser_dask" {
+  metadata {
+    name      = "singleuser-dask-gateway"
+    namespace = local.namespace
+  }
+
+  spec {
+    pod_selector {
+      match_labels = {
+        "app"       = "jupyterhub"
+        "component" = "singleuser-server"
+        "release"   = "jupyterhub"
+      }
+    }
+
+    egress {
+      ports {
+        port     = "8000"
+        protocol = "TCP"
+      }
+      to {
+        pod_selector {
+          match_labels = {
+            "app.kubernetes.io/component" = "traefik"
+            "app.kubernetes.io/instance"  = "dask-gateway"
+            "app.kubernetes.io/name"      = "dask-gateway"
+          }
+        }
+      }
+    }
+
+    policy_types = ["Egress"]
+  }
 }
