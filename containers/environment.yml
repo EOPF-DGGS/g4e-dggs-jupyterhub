@@ -2,9 +2,8 @@ channels:
   - conda-forge
 
 dependencies:
-  - cdshealpix
-  - healpy
-  - h3ronpy
+  - numpy>=2.3
+  - xarray>=2026.2
   - xdggs
   - pip
   - pip:
