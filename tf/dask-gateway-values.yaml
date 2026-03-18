@@ -12,8 +12,8 @@ gateway:
       c.ClusterConfig.idle_timeout = 3600
   backend:
     image:
-      name: pangeo/pangeo-notebook
-      tag: "2025.05.22"
+      name: quay.io/jeani/g4e-notebook
+      tag: "latest"
     scheduler:
       cores:
         request: 0.5

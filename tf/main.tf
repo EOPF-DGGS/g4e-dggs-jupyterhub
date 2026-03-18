@@ -101,6 +101,11 @@ resource "helm_release" "jupyterhub" {
   ]
 
   set {
+    name  = "singleuser.startTimeout"
+    value = "600"
+  }
+
+  set {
     name  = "hub.config.JupyterHub.authenticator_class"
     value = "github"
   }
@@ -138,11 +143,11 @@ resource "helm_release" "jupyterhub" {
   }
   set {
     name  = "singleuser.image.name"
-    value = "pangeo/pangeo-notebook"
+    value = "quay.io/jeani/g4e-notebook"
   }
   set {
     name  = "singleuser.image.tag"
-    value = "2025.05.22"
+    value = "latest"
   }
   set {
     name  = "singleuser.storage.type"
