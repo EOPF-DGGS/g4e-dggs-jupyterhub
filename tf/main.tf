@@ -25,6 +25,11 @@ terraform {
   }
 }
 
+variable "harbor_robot_username" {
+  type      = string
+  sensitive = true
+}
+
 provider "ovh" {
   endpoint = "ovh-eu"
 }
@@ -95,6 +100,11 @@ resource "helm_release" "jupyterhub" {
   version    = "4.3.2"
   timeout    = 600
 
+  set {
+    name  = "imagePullSecrets[0]"
+    value = "harbor-pull-secret"
+  }
+
   values = [
     file("${path.module}/secrets/values.yaml"),
     file("${path.module}/values.yaml"),
@@ -143,11 +153,15 @@ resource "helm_release" "jupyterhub" {
   }
   set {
     name  = "singleuser.image.name"
-    value = "quay.io/jeani/g4e-notebook"
+    value = "y74y55mn.gra7.container-registry.ovh.net/healpix-private/g4e-jupyterhub-private"
   }
   set {
     name  = "singleuser.image.tag"
     value = "latest"
+  }
+  set {
+    name  = "singleuser.image.pullSecrets[0]"
+    value = "harbor-pull-secret"
   }
   set {
     name  = "singleuser.storage.type"
@@ -233,4 +247,24 @@ resource "kubernetes_network_policy" "singleuser_dask" {
 
     policy_types = ["Egress"]
   }
+}
+
+resource "kubernetes_secret" "harbor_pull_secret" {
+  metadata {
+    name      = "harbor-pull-secret"
+    namespace = local.namespace
+  }
+  type = "kubernetes.io/dockerconfigjson"
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "y74y55mn.gra7.container-registry.ovh.net" = {
+          username = var.harbor_robot_username
+          password = var.harbor_robot_token
+          auth     = base64encode("${var.harbor_robot_username}:${var.harbor_robot_token}")
+        }
+      }
+    })
+  }
+  depends_on = [kubernetes_namespace.jupyterhub]
 }
